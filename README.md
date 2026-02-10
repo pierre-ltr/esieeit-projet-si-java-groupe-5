@@ -3,6 +3,25 @@
 ## Présentation
 Ce projet est réalisé dans le cadre du module SI à l'ESIEE IT par le groupe 5. Il s'agit d'une application Java dont le but et les fonctionnalités sont à compléter selon le cahier des charges du groupe.
 
+## Contexte
+
+Projet SI en Java : construire une API backend propre, structurée, documentée et testée, avec un workflow Git proche entreprise.
+
+## Objectifs
+
+- Mettre en place un dépôt Git propre (main/develop/feature)
+- Implémenter un MVP (auth + gestion de ressources métier)
+- Respecter une architecture claire (controller/service/repository)
+- Ajouter des tests unitaires
+- Produire une documentation exploitable (README + backlog)
+
+## Équipe
+
+- Leterrier Pierre - Lead Dev
+- Claudon Antoine - QA
+- Volle Tao - PO
+- Mezouar Mehdi - Dev
+
 ## Installation
 Pour installer le projet, il suffit de cloner le dépôt avec la clé SSH :
 
