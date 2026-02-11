@@ -149,7 +149,7 @@ Le MVP couvre les US Must suivantes : US-01, US-02, US-05, US-06, US-07, US-09, 
 
 # Étape 4 - Suite : critères d’acceptation & split
 
-## 6.2 Critères d’acceptation (exemples)
+## 6.2 Critères d’acceptation (par US)
 
 US-01 (inscription)
 - Given je suis visiteur
@@ -157,11 +157,86 @@ US-01 (inscription)
 - Then un compte est créé
 - And je peux me connecter
 
+US-02 (login)
+- Given un compte existe
+- When je saisis des identifiants valides
+- Then je suis authentifié
+- And j’accède à mes projets
+
+US-03 (logout)
+- Given je suis connecté
+- When je me déconnecte
+- Then ma session est invalidée
+- And je reviens à l’écran public
+
+US-04 (modifier profil)
+- Given je suis connecté
+- When je modifie mes informations
+- Then les nouvelles données sont enregistrées
+- And elles sont visibles sur mon profil
+
+US-05 (créer projet)
+- Given je suis connecté
+- When je crée un projet avec un nom valide
+- Then le projet est créé
+- And il apparaît dans ma liste
+
+US-06 (lister projets)
+- Given je suis connecté
+- When je consulte la liste des projets
+- Then je vois tous mes projets
+- And les infos principales sont visibles
+
+US-07 (modifier projet)
+- Given un projet m’appartient
+- When je modifie ses informations
+- Then les changements sont enregistrés
+- And la liste reflète la mise à jour
+
+US-08 (supprimer projet)
+- Given un projet m’appartient
+- When je le supprime
+- Then il disparaît de ma liste
+- And ses tâches ne sont plus accessibles
+
 US-09 (ajout tâche)
 - Given je suis connecté
 - When je crée une tâche dans un projet existant
 - Then la tâche apparaît dans la liste
 - And elle est associée au bon projet
+
+US-10 (changer statut tâche)
+- Given une tâche existe
+- When je change son statut
+- Then le nouveau statut est enregistré
+- And il est visible dans la liste
+
+US-11 (modifier tâche)
+- Given une tâche existe
+- When je modifie son contenu
+- Then les changements sont enregistrés
+- And la tâche affiche les nouvelles données
+
+US-12 (supprimer tâche)
+- Given une tâche existe
+- When je la supprime
+- Then elle disparaît de la liste
+- And elle n’est plus accessible
+
+US-13 (filtrer tâches)
+- Given je suis connecté
+- When je filtre par statut
+- Then seules les tâches correspondantes s’affichent
+
+US-14 (rechercher tâche)
+- Given je suis connecté
+- When je recherche par mot-clé
+- Then les tâches correspondantes sont affichées
+
+US-15 (admin lister utilisateurs)
+- Given je suis admin
+- When je consulte la liste des utilisateurs
+- Then je vois tous les comptes
 
 ## 6.3 Découpage “story trop grosse” (split)
 
@@ -248,6 +323,26 @@ Décision :
 - L : gros (plus d’une séance) → à découper
 
 Si une story est L, vous devez la découper.
+
+## 8.1.1 Estimation par story (S/M/L)
+
+| US | Estimation |
+| --- | --- |
+| US-01 | M |
+| US-02 | M |
+| US-03 | S |
+| US-04 | M |
+| US-05 | M |
+| US-06 | S |
+| US-07 | M |
+| US-08 | M |
+| US-09 | M |
+| US-10 | S |
+| US-11 | M |
+| US-12 | S |
+| US-13 | S |
+| US-14 | M |
+| US-15 | S |
 
 ## 8.2 Définition “Done” (DoD)
 Pour qu’une story soit “Done” :
