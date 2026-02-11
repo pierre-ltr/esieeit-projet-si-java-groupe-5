@@ -15,6 +15,11 @@ Projet SI en Java : construire une API backend propre, structurée, documentée 
 - Ajouter des tests unitaires
 - Produire une documentation exploitable (README + backlog)
 
+## Documentation
+
+- `PRODUCT.md` : définition du produit (pitch, périmètre MVP, contraintes)
+- `BACKLOG.md` : backlog fonctionnel
+
 ## Équipe
 
 - Leterrier Pierre - Lead Dev
