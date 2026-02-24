@@ -3,33 +3,37 @@
 ## Base package
 `com.esieeit.projetsi`
 
-## Structure proposee (Clean Architecture simplifiee)
+## Structure proposee (architecture en couches simplifiee)
 ```
 com.esieeit.projetsi
-├── domain
-│   ├── model          # entites metier (User, Project, Task, Comment)
-│   ├── enums          # UserRole, TaskStatus
-│   └── exception      # exceptions metier (evolution)
-├── application
-│   ├── service        # orchestration des cas d'usage
-│   └── port           # interfaces (repositories/services) si besoin
 ├── api
 │   ├── controller     # REST controllers
 │   └── dto            # request/response DTO
-└── infrastructure
-    ├── persistence    # JPA entities + repositories
-    └── config         # configuration (security, etc.)
+├── domain
+│   ├── model          # entites metier (User, Project, Task, Comment)
+│   └── enums          # UserRole, TaskStatus
+├── service            # orchestration des cas d'usage (metier applicatif)
+├── repository         # interfaces d'acces aux donnees (et/ou adaptateurs au debut)
+└── exception          # exceptions applicatives/metier
 ```
 
 ## Role de chaque package
-- `domain` : coeur metier (entites, invariants, enums). Aucun framework ici.
-- `application` : coordination des cas d'usage, regles applicatives.
 - `api` : exposition HTTP (controllers, DTO, mapping).
-- `infrastructure` : persistence, configuration, integrations techniques.
+- `domain` : coeur metier (entites, invariants, enums). Aucun framework ici.
+- `service` : coordination des cas d'usage et regles applicatives.
+- `repository` : acces aux donnees (abstraction ou implementation simple selon la seance).
+- `exception` : exceptions fonctionnelles/techniques partagees.
 
 ## Regles de dependances
-- `api` depend de `application` (controller -> service).
-- `application` depend de `domain`.
+- `api` depend de `service` et `dto`.
+- `service` depend de `domain` et `repository`.
+- `repository` peut dependre de `domain`.
 - `domain` ne depend de personne (pas de Spring, pas de JPA).
-- `infrastructure` depend de `application` et `domain`.
 - Interdit : acces direct `controller -> repository`.
+
+## Evolution possible (seances suivantes)
+Si le projet grossit (Spring/JPA), `service` et `repository` pourront etre remappes vers une structure plus "clean" :
+- `application/service`
+- `application/port`
+- `infrastructure/persistence`
+- `infrastructure/config`
