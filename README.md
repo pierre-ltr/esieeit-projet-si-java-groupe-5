@@ -19,6 +19,9 @@ Projet SI en Java : construire une API backend propre, structurée, documentée 
 
 - `PRODUCT.md` : définition du produit (pitch, périmètre MVP, contraintes)
 - `BACKLOG.md` : backlog fonctionnel
+- `docs/DOMAIN_MODEL.md` : modèle métier (acteurs, entités, règles, diagramme)
+- `docs/PACKAGE_STRUCTURE.md` : structure de packages et règles de dépendances
+- `docs/DECISIONS.md` : décisions d'architecture (mini ADR)
 
 ## Équipe
 
