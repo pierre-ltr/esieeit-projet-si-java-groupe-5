@@ -22,8 +22,11 @@ Projet SI en Java : construire une API backend propre, structurée, documentée 
 
 - Java 21
 - Gradle (wrapper)
+- Spring Boot 3.3
+- Spring Web
+- Spring Data JPA / Hibernate
+- MySQL 8 via Docker Compose
 - JUnit 5
-- (à venir) Spring Boot, DB, Docker
 
 ## Installation
 
@@ -31,6 +34,7 @@ Projet SI en Java : construire une API backend propre, structurée, documentée 
 
 - Java 17/21
 - Git
+- Docker Desktop ou Docker Engine démarré
 
 ### Cloner
 
@@ -40,6 +44,26 @@ cd <repo>
 ```
 
 ## Lancer
+
+### Base de données MySQL
+
+1. Copier l’exemple d’environnement :
+
+```bash
+cp .env.example .env
+```
+
+2. Démarrer la base :
+
+```bash
+docker compose up -d
+```
+
+3. Vérifier l’état des conteneurs :
+
+```bash
+docker compose ps
+```
 
 ### Tests
 
@@ -51,6 +75,21 @@ cd <repo>
 
 ```bash
 ./gradlew bootRun
+```
+
+Variables utilisées par l’application :
+
+- `DB_HOST` : hôte MySQL, défaut `localhost`
+- `DB_PORT` : port exposé, défaut `3307`
+- `DB_NAME` : nom de la base, défaut `project_si_db`
+- `DB_USER` : utilisateur applicatif, défaut `project_user`
+- `DB_PASSWORD` : mot de passe applicatif, défaut `project_pass`
+- `DB_ROOT_PASSWORD` : mot de passe root utilisé par Docker Compose
+
+Exemple de vérification une fois l’API démarrée :
+
+```bash
+curl -i http://localhost:8080/
 ```
 
 ## Workflow Git
@@ -82,6 +121,29 @@ Voir `BACKLOG.md`.
 - Règles métier et validations (TP 2.2) : `docs/DOMAIN_RULES.md`
 - API REST Task CRUD (TP 3.1) : `docs/API_TASKS.md`
 - Validation et gestion d’erreurs (TP 3.2) : `docs/API_ERRORS.md`
+
+## TP 4.1 - Base de données & JPA
+
+Éléments déjà en place dans le projet :
+
+- `docker-compose.yml` pour MySQL 8
+- configuration datasource/JPA dans `src/main/resources/application.yml`
+- profils `application-dev.yml` et `application-test.yml`
+- entités JPA : `User`, `Project`, `Task`, `Comment`
+- enums métier persistées en `STRING`
+- relations JPA : `@OneToMany`, `@ManyToOne`, `@ElementCollection`
+- test de vérification JPA : `JpaMappingSmokeTest`
+
+Points de vérification attendus :
+
+- lancer Docker avec `docker compose up -d`
+- lancer l’app avec `./gradlew bootRun`
+- vérifier dans les logs Hibernate la connexion DB et la création/mise à jour du schéma
+
+Note locale :
+
+- le repo est prêt pour le TP 4.1
+- la vérification runtime MySQL n’a pas pu être rejouée ici car le daemon Docker local n’était pas démarré
 
 ## API Tasks (TP 3.1)
 
@@ -123,10 +185,16 @@ curl -i -X POST http://localhost:8080/api/tasks \
 
 - `build.gradle`
    - Rôle : configuration du build Gradle.
-   - Contenu clé : plugins Java/Spring Boot, dépendances web/validation/tests.
+   - Contenu clé : plugins Java/Spring Boot, dépendances web/validation/JPA/tests.
    - Impact : détermine ce qui compile, ce qui s’exécute et ce qui est testé.
 - `settings.gradle`
    - Rôle : déclare le nom du projet Gradle.
+- `.env.example`
+   - Rôle : variables d’environnement d’exemple pour Docker Compose et Spring Boot.
+- `docker-compose.yml`
+   - Rôle : démarre la base MySQL locale du TP 4.1.
+- `src/main/resources/application.yml`
+   - Rôle : configuration Spring Boot datasource + Hibernate.
 - `src/main/java/com/esieeit/projetsi/ProjectSiApplication.java`
    - Rôle : point d’entrée de l’API Spring Boot (`main`).
    - Usage : démarrage via `./gradlew bootRun`.
@@ -210,6 +278,12 @@ curl -i -X POST http://localhost:8080/api/tasks \
    - Génération ID : `AtomicLong` auto-incrémenté.
    - Limite : non persistant (données perdues au redémarrage).
    - But : préparer la transition vers base de données au TP suivant.
+
+### Vérification JPA
+
+- `src/test/java/com/esieeit/projetsi/domain/model/JpaMappingSmokeTest.java`
+   - Rôle : vérifie que les entités JPA principales et leurs relations se persistent correctement.
+   - Intérêt : sécurise le mapping du TP 4.1 même sans lancer manuellement l’application complète.
 
 ### Domaine métier
 
