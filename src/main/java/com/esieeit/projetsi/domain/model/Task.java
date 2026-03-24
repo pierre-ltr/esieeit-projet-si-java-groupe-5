@@ -4,29 +4,80 @@ import com.esieeit.projetsi.domain.enums.TaskPriority;
 import com.esieeit.projetsi.domain.enums.TaskStatus;
 import com.esieeit.projetsi.domain.exception.BusinessRuleException;
 import com.esieeit.projetsi.domain.validation.Validators;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Domain entity representing a task inside a project.
  */
+@Entity
+@Table(name = "tasks")
 public class Task {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank
+    @Size(min = 1, max = 120)
+    @Column(name = "title", nullable = false, length = 120)
     private String title;
+
+    @Size(max = 1000)
+    @Column(name = "description", length = 1000)
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 30)
     private TaskStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "priority", nullable = false, length = 30)
     private TaskPriority priority;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "fk_tasks_project"))
     private Project project;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignee_id", foreignKey = @ForeignKey(name = "fk_tasks_assignee"))
     private User assignee;
+
+    @Column(name = "due_date")
     private LocalDate dueDate;
-    private final Instant createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final Set<Comment> comments = new HashSet<>();
+
+    protected Task() {
+    }
+
     public Task(String title, String description, Project project) {
-        this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
         setTitle(title);
         setDescription(description);
         setProject(project);
@@ -126,6 +177,10 @@ public class Task {
         return updatedAt;
     }
 
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
     /**
      * Allowed from TODO only.
      */
@@ -172,6 +227,21 @@ public class Task {
 
     private void touch() {
         this.updatedAt = Instant.now();
+    }
+
+    @PrePersist
+    private void onCreate() {
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = createdAt;
+        }
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        updatedAt = Instant.now();
     }
 
     @Override
