@@ -145,6 +145,66 @@ Note locale :
 - le repo est prêt pour le TP 4.1
 - la vérification runtime MySQL n’a pas pu être rejouée ici car le daemon Docker local n’était pas démarré
 
+## TP 4.2 - Repositories & données de test
+
+Ce qui a été ajouté :
+
+- repositories Spring Data JPA pour `User`, `Project` et `Task`
+- query methods métier pour filtrer par statut, projet, assigné ou titre
+- `TaskService` migré de l’ancien stockage en mémoire vers la persistance JPA réelle
+- seed de données de développement via `CommandLineRunner`
+
+Repositories créés :
+
+- `UserRepository`
+- `ProjectRepository`
+- `TaskRepository`
+
+Exemples de query methods ajoutées :
+
+- `UserRepository.findByEmail(...)`
+- `ProjectRepository.findFirstByNameIgnoreCase(...)`
+- `ProjectRepository.findByStatus(...)`
+- `TaskRepository.findByStatus(...)`
+- `TaskRepository.findByProjectId(...)`
+- `TaskRepository.findByAssigneeId(...)`
+- `TaskRepository.findByTitleContainingIgnoreCase(...)`
+- `TaskRepository.existsByProjectIdAndTitleIgnoreCase(...)`
+- `TaskRepository.countByProjectId(...)`
+
+Stratégie de seed :
+
+- seed Java avec `CommandLineRunner`
+- activé uniquement avec le profil `dev`
+- le seed ne s’exécute que si la base est vide
+
+Lancement conseillé pour le TP 4.2 :
+
+```bash
+cp .env.example .env
+docker compose up -d
+SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+```
+
+Endpoints de test rapides :
+
+```bash
+curl -i http://localhost:8080/api/tasks
+curl -i http://localhost:8080/api/tasks/1
+curl -i -X POST http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Verifier la persistance JPA","description":"Creation d une vraie tache en base"}'
+```
+
+Mini synthèse TP 4.2 :
+
+- Repositories créés : `UserRepository`, `ProjectRepository`, `TaskRepository`.
+- Query methods ajoutées pour préparer les usages métier immédiats et la future auth JWT.
+- `TaskService` a été migré vers JPA et n’utilise plus le repository en mémoire.
+- La stratégie de seed choisie est `CommandLineRunner`, limitée au profil `dev`.
+- Problèmes rencontrés : compatibilité MySQL 8.4 dans Docker Compose et URL JDBC.
+- À améliorer avant la séance 5 : brancher une vraie persistance utilisateur/auth et enrichir les endpoints métier.
+
 ## API Tasks (TP 3.1)
 
 Endpoints disponibles :
@@ -177,7 +237,7 @@ curl -i -X POST http://localhost:8080/api/tasks \
 1. Le client envoie une requête HTTP sur `/api/tasks`.
 2. `TaskController` reçoit le JSON et valide le DTO (`@Valid`).
 3. `TaskService` applique la logique métier et les règles de workflow.
-4. `TaskRepository` (implémenté en mémoire) persiste/récupère la donnée.
+4. `TaskRepository` (Spring Data JPA) persiste/récupère la donnée en base MySQL.
 5. `TaskMapper` convertit l’entité `Task` en `TaskResponse`.
 6. En cas d’erreur, `GlobalExceptionHandler` construit une réponse JSON standardisée.
 
@@ -263,21 +323,25 @@ curl -i -X POST http://localhost:8080/api/tasks \
    - Opérations : `create`, `getAll`, `getById`, `update`, `delete`.
    - Règles métier : transitions de statut autorisées/interdites.
    - Exceptions métier : `ResourceNotFoundException`, `InvalidDataException`, `BusinessRuleException`.
-   - Note design : utilise un `defaultProject` pour satisfaire les contraintes du domaine en mode in-memory (TP 3.x).
+   - Note design : crée ou réutilise un projet par défaut persistant pour l’API Tasks.
 
-- `src/main/java/com/esieeit/projetsi/application/port/TaskRepository.java`
-   - Rôle : interface (port) de persistance des tâches.
-   - Méthodes : `save`, `findById`, `findAll`, `deleteById`, `existsById`.
-   - Intérêt : découple le service de la technologie de stockage.
+### Infrastructure (persistance JPA)
 
-### Infrastructure (persistance temporaire)
+- `src/main/java/com/esieeit/projetsi/infrastructure/repository/TaskRepository.java`
+   - Rôle : repository JPA principal pour les tâches.
+   - Intérêt : persistance réelle MySQL + query methods métier.
 
-- `src/main/java/com/esieeit/projetsi/infrastructure/repository/InMemoryTaskRepository.java`
-   - Rôle : implémentation en mémoire de `TaskRepository`.
-   - Stockage : `Map<Long, Task>`.
-   - Génération ID : `AtomicLong` auto-incrémenté.
-   - Limite : non persistant (données perdues au redémarrage).
-   - But : préparer la transition vers base de données au TP suivant.
+- `src/main/java/com/esieeit/projetsi/infrastructure/repository/ProjectRepository.java`
+   - Rôle : repository JPA des projets.
+   - Intérêt : retrouver le projet par défaut et filtrer par statut/propriétaire.
+
+- `src/main/java/com/esieeit/projetsi/infrastructure/repository/UserRepository.java`
+   - Rôle : repository JPA des utilisateurs.
+   - Intérêt : préparer la future authentification par email.
+
+- `src/main/java/com/esieeit/projetsi/infrastructure/seed/DataInitializer.java`
+   - Rôle : injecte des données de démonstration en profil `dev`.
+   - Intérêt : permet de tester immédiatement l’API avec des données réelles.
 
 ### Vérification JPA
 
