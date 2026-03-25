@@ -78,7 +78,11 @@ class RepositoryQueryMethodsTest {
         assertThat(projectRepository.findByOwnerId(owner.getId())).hasSize(1);
 
         assertThat(userRepository.findByEmail("owner-query@esieeit.local")).isPresent();
+        assertThat(userRepository.findByEmailIgnoreCase("OWNER-QUERY@ESIEEIT.LOCAL")).isPresent();
         assertThat(userRepository.findByUsernameIgnoreCase("OWNERQUERY")).isPresent();
+        assertThat(userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase("owner-query@esieeit.local", "ignored"))
+                .isPresent();
         assertThat(userRepository.existsByEmailIgnoreCase("OWNER-QUERY@ESIEEIT.LOCAL")).isTrue();
+        assertThat(userRepository.existsByUsernameIgnoreCase("OWNERQUERY")).isTrue();
     }
 }
