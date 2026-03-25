@@ -26,3 +26,7 @@ logging:
     org.hibernate.orm.jdbc.bind: trace
     org.springframework.orm.jpa: info
     org.springframework.transaction: info
+
+jwt:
+  secret: ${JWT_SECRET:ZmFrZS1kZXYtc2VjcmV0LWZvci10cDUuMS1yZXBsYWNlLW1lLXdpdGgtYS1yZWFsLWJhc2U2NC1rZXktYXQtbGVhc3QtMjU2LWJpdHM=}
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000}

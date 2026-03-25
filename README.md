@@ -25,6 +25,8 @@ Projet SI en Java : construire une API backend propre, structurée, documentée 
 - Spring Boot 3.3
 - Spring Web
 - Spring Data JPA / Hibernate
+- Spring Security
+- JWT (JJWT)
 - MySQL 8 via Docker Compose
 - JUnit 5
 
@@ -85,6 +87,8 @@ Variables utilisées par l’application :
 - `DB_USER` : utilisateur applicatif, défaut `project_user`
 - `DB_PASSWORD` : mot de passe applicatif, défaut `project_pass`
 - `DB_ROOT_PASSWORD` : mot de passe root utilisé par Docker Compose
+- `JWT_SECRET` : secret JWT encodé en Base64
+- `JWT_EXPIRATION_MS` : durée de vie du token, défaut `3600000`
 
 Exemple de vérification une fois l’API démarrée :
 
@@ -204,6 +208,49 @@ Mini synthèse TP 4.2 :
 - La stratégie de seed choisie est `CommandLineRunner`, limitée au profil `dev`.
 - Problèmes rencontrés : compatibilité MySQL 8.4 dans Docker Compose et URL JDBC.
 - À améliorer avant la séance 5 : brancher une vraie persistance utilisateur/auth et enrichir les endpoints métier.
+
+## TP 5.1 - Authentification JWT
+
+Ce qui a été ajouté :
+
+- `AuthController` avec `POST /api/auth/register` et `POST /api/auth/login`
+- `AuthService` pour l’inscription, la vérification des doublons et l’authentification
+- `JwtService` pour générer et valider les tokens
+- `SecurityBeansConfig` avec `PasswordEncoder` BCrypt et configuration Spring Security minimale
+- méthodes de repository pour retrouver un user par email ou username, en ignorant la casse
+- hash BCrypt pour les nouveaux comptes et pour les comptes seed `dev`
+
+Lancement conseillé pour le TP 5.1 :
+
+```bash
+cp .env.example .env
+docker compose up -d
+SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+```
+
+Tests rapides :
+
+```bash
+curl -i -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"lydia","email":"lydia@example.com","password":"MotDePasse123!"}'
+
+curl -i -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"login":"lydia","password":"MotDePasse123!"}'
+
+curl -i -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"login":"lydia@example.com","password":"MotDePasse123!"}'
+```
+
+Critères validés :
+
+- inscription d’un nouvel utilisateur via l’API
+- mot de passe stocké en BCrypt
+- login accepté avec username ou email
+- login refusé avec mauvais mot de passe
+- génération d’un JWT signé avec date d’expiration
 
 ## API Tasks (TP 3.1)
 

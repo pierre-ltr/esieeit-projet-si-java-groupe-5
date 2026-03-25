@@ -15,6 +15,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @Profile("dev")
@@ -23,27 +24,31 @@ public class DataInitializer {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(
             UserRepository userRepository,
             ProjectRepository projectRepository,
-            TaskRepository taskRepository) {
+            TaskRepository taskRepository,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.taskRepository = taskRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
     CommandLineRunner initData() {
         return args -> {
             if (userRepository.count() > 0 || projectRepository.count() > 0 || taskRepository.count() > 0) {
+                refreshSeedPasswordsIfNeeded();
                 return;
             }
 
             User admin = new User("admin@esieeit.local", "admin", Set.of(UserRole.ADMIN));
-            admin.setPasswordHash("admin-password");
+            admin.setPasswordHash(passwordEncoder.encode("admin-password"));
             User devUser = new User("dev@esieeit.local", "devuser", Set.of(UserRole.USER));
-            devUser.setPasswordHash("dev-password");
+            devUser.setPasswordHash(passwordEncoder.encode("dev-password"));
             userRepository.save(admin);
             userRepository.save(devUser);
 
@@ -76,5 +81,19 @@ public class DataInitializer {
             taskRepository.save(task2);
             taskRepository.save(task3);
         };
+    }
+
+    private void refreshSeedPasswordsIfNeeded() {
+        refreshSeedPassword("admin@esieeit.local", "admin-password");
+        refreshSeedPassword("dev@esieeit.local", "dev-password");
+    }
+
+    private void refreshSeedPassword(String email, String rawPassword) {
+        userRepository.findByEmailIgnoreCase(email)
+                .filter(user -> user.getPasswordHash() != null && !user.getPasswordHash().startsWith("$2"))
+                .ifPresent(user -> {
+                    user.setPasswordHash(passwordEncoder.encode(rawPassword));
+                    userRepository.save(user);
+                });
     }
 }
