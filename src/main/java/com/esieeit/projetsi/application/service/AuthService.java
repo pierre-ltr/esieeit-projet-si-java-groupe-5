@@ -6,15 +6,17 @@ import com.esieeit.projetsi.api.dto.auth.RegisterRequestDTO;
 import com.esieeit.projetsi.domain.enums.UserRole;
 import com.esieeit.projetsi.domain.exception.InvalidDataException;
 import com.esieeit.projetsi.domain.model.User;
+import com.esieeit.projetsi.infrastructure.security.AuthenticatedUserDetails;
 import com.esieeit.projetsi.infrastructure.repository.UserRepository;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Set;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -22,14 +24,17 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
+            JwtService jwtService,
+            AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.authenticationManager = authenticationManager;
     }
 
     @Transactional
@@ -54,18 +59,16 @@ public class AuthService {
     public AuthResponseDTO login(LoginRequestDTO request) {
         String normalizedLogin = normalize(request.getLogin());
 
-        User user = resolveByLogin(normalizedLogin)
-                .filter(candidate -> passwordEncoder.matches(request.getPassword(), candidate.getPasswordHash()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Identifiants invalides"));
-
-        return buildAuthResponse(user);
-    }
-
-    private java.util.Optional<User> resolveByLogin(String normalizedLogin) {
-        if (normalizedLogin.contains("@")) {
-            return userRepository.findByEmailIgnoreCase(normalizedLogin);
+        try {
+            var authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(normalizedLogin, request.getPassword()));
+            AuthenticatedUserDetails principal = (AuthenticatedUserDetails) authentication.getPrincipal();
+            return buildAuthResponse(principal);
+        } catch (BadCredentialsException ex) {
+            throw InvalidDataException.unauthorized("Identifiants invalides");
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            throw InvalidDataException.unauthorized("Identifiants invalides");
         }
-        return userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(normalizedLogin, normalizedLogin);
     }
 
     private AuthResponseDTO buildAuthResponse(User user) {
@@ -77,6 +80,20 @@ public class AuthService {
                 user.getUsername(),
                 user.getEmail(),
                 user.getRoles().stream()
+                        .map(Enum::name)
+                        .max(Comparator.naturalOrder())
+                        .orElse(UserRole.USER.name()));
+    }
+
+    private AuthResponseDTO buildAuthResponse(AuthenticatedUserDetails principal) {
+        return new AuthResponseDTO(
+                jwtService.generateToken(principal.getUsername(), principal.getEmail(), principal.getRoles()),
+                "Bearer",
+                jwtService.getExpirationMs(),
+                principal.getId(),
+                principal.getUsername(),
+                principal.getEmail(),
+                principal.getRoles().stream()
                         .map(Enum::name)
                         .max(Comparator.naturalOrder())
                         .orElse(UserRole.USER.name()));
