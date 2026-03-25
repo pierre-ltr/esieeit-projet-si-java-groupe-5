@@ -252,6 +252,47 @@ Critères validés :
 - login refusé avec mauvais mot de passe
 - génération d’un JWT signé avec date d’expiration
 
+## TP 5.2 - Sécurisation des endpoints
+
+Ce qui a été ajouté :
+
+- `CustomUserDetailsService` pour charger un utilisateur depuis la base
+- `JwtAuthenticationFilter` pour lire le header `Authorization: Bearer ...`
+- handlers JSON dédiés pour `401 Unauthorized` et `403 Forbidden`
+- configuration CORS locale pour un futur front
+- `SecurityTestController` avec routes publiques, authentifiées et admin
+- protection réelle de `GET/POST/PUT/DELETE /api/tasks/**` via JWT
+
+Routes de test :
+
+- `GET /api/security-test/public` : public
+- `GET /api/security-test/common` : token requis
+- `GET /api/security-test/user` : rôle `USER`
+- `GET /api/security-test/admin` : rôle `ADMIN`
+- `GET /api/tasks` : token requis
+
+Exemple de test rapide :
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  --data-binary @- <<'EOF' | jq -r '.token'
+{"login":"devuser","password":"dev-password"}
+EOF
+)
+
+curl -i http://localhost:8080/api/security-test/public
+curl -i http://localhost:8080/api/security-test/common -H "Authorization: Bearer $TOKEN"
+curl -i http://localhost:8080/api/tasks -H "Authorization: Bearer $TOKEN"
+```
+
+Comportement attendu :
+
+- sans token sur une route protégée : `401`
+- avec token valide : `200`
+- avec token utilisateur sur `/api/security-test/admin` : `403`
+- avec token admin sur `/api/security-test/admin` : `200`
+
 ## API Tasks (TP 3.1)
 
 Endpoints disponibles :

@@ -1,5 +1,6 @@
 package com.esieeit.projetsi.application.service;
 
+import com.esieeit.projetsi.domain.enums.UserRole;
 import com.esieeit.projetsi.domain.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -9,8 +10,10 @@ import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,14 +30,18 @@ public class JwtService {
     }
 
     public String generateToken(User user) {
+        return generateToken(user.getUsername(), user.getEmail(), user.getRoles());
+    }
+
+    public String generateToken(String username, String email, Set<UserRole> roles) {
         Instant now = Instant.now();
         Instant expiresAt = now.plusMillis(expirationMs);
 
         return Jwts.builder()
-                .subject(user.getUsername())
+                .subject(username)
                 .claims(Map.of(
-                        "email", user.getEmail(),
-                        "roles", user.getRoles().stream().map(Enum::name).sorted().toList()))
+                        "email", email,
+                        "roles", roles.stream().map(Enum::name).sorted().toList()))
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiresAt))
                 .signWith(signingKey)
@@ -61,6 +68,15 @@ public class JwtService {
         try {
             String username = extractUsername(token);
             return username.equals(user.getUsername()) && !isTokenExpired(token);
+        } catch (RuntimeException ex) {
+            return false;
+        }
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        try {
+            String username = extractUsername(token);
+            return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
         } catch (RuntimeException ex) {
             return false;
         }
