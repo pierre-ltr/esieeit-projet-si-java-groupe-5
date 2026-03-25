@@ -14,9 +14,11 @@ Projet SI en Java : construire une API backend propre, structurée, documentée 
 
 ## Équipe
 
-- Nom Prénom - rôle (PO / Lead Dev / Dev / QA)
-- Nom Prénom - rôle
-- Nom Prénom - rôle
+- Pierre Leterrier - Lead Dev (PO / Lead Dev / Dev / QA)
+- Antoine Claudon - Dev
+- Mehdi Mezouar - PO
+- Tao Volle - QA
+- Halim Cifti - Testeur
 
 ## Stack
 
@@ -47,24 +49,28 @@ cd <repo>
 
 ## Lancer
 
-### Base de données MySQL
+### Démarrage rapide avec Docker Compose
 
-1. Copier l’exemple d’environnement :
-
-```bash
-cp .env.example .env
-```
-
-2. Démarrer la base :
+Si `.env` existe déjà, un simple :
 
 ```bash
 docker compose up -d
 ```
 
-3. Vérifier l’état des conteneurs :
+démarre maintenant la base MySQL et l’API Spring Boot.
+
+Vérification :
 
 ```bash
 docker compose ps
+curl -i http://localhost:8080/
+```
+
+Premier lancement si besoin :
+
+```bash
+cp .env.example .env
+docker compose up -d
 ```
 
 ### Tests
@@ -73,7 +79,7 @@ docker compose ps
 ./gradlew test
 ```
 
-### Run API Spring Boot
+### Run API Spring Boot en local
 
 ```bash
 ./gradlew bootRun
@@ -95,6 +101,11 @@ Exemple de vérification une fois l’API démarrée :
 ```bash
 curl -i http://localhost:8080/
 ```
+
+Note :
+
+- `docker compose up -d` lance déjà aussi l’API dans un conteneur
+- `./gradlew bootRun` reste utile si tu préfères lancer Spring Boot directement depuis ta machine
 
 ## Workflow Git
 
