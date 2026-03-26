@@ -14,11 +14,21 @@ Projet SI en Java : construire une API backend propre, structurée, documentée 
 
 ## Équipe
 
-- Pierre Leterrier - Lead Dev (PO / Lead Dev / Dev / QA)
+- Pierre Leterrier - Lead Dev
 - Antoine Claudon - Dev
 - Mehdi Mezouar - PO
 - Tao Volle - QA
 - Halim Cifti - Testeur
+
+Le Lead Dev pilote les choix techniques du projet, structure l’architecture de l’application et veille à la cohérence globale du code produit. Il coordonne l’avancement côté développement, aide à résoudre les blocages techniques et s’assure que les fonctionnalités livrées respectent le niveau de qualité attendu.
+
+Le Dev est en charge de l’implémentation concrète des fonctionnalités prévues dans le backlog. Il développe les endpoints, les services, la persistance ou les tests selon les besoins du sprint, tout en respectant les conventions de code, l’architecture choisie et le workflow Git de l’équipe.
+
+Le PO, ou Product Owner, définit les besoins fonctionnels et priorise les éléments à réaliser. Son rôle est de clarifier les attentes métier, de cadrer les objectifs du projet et de s’assurer que ce qui est développé répond bien au périmètre demandé pendant les TP.
+
+Le QA, ou Quality Assurance, vérifie la qualité globale du projet avant livraison. Il contrôle la cohérence du comportement attendu, relit les changements, identifie les risques de régression et s’assure que les tests permettent de sécuriser les principales fonctionnalités de l’application.
+
+Le Testeur intervient plus spécifiquement sur la validation pratique du produit. Il exécute les scénarios de test, vérifie les résultats observés sur l’API, repère les anomalies fonctionnelles éventuelles et confirme que les fonctionnalités sont utilisables dans les conditions prévues.
 
 ## Stack
 
